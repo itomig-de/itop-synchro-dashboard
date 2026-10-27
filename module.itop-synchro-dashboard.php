@@ -46,7 +46,7 @@ SetupWebPage::AddModule(
 		//
 		'settings' => array(
 			// Module specific settings go here, if any
-			'use_last_run_stats' => true,
+			'use_last_run_stats' => false,
 		),
 	)
 );

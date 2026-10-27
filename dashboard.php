@@ -180,6 +180,7 @@ try {
 	$iPeakMemory = 0;
 	$iTotalDuration = 0;
 	$iTotalDataSources = 0;
+	$bUseLastRunStats = MetaModel::GetModuleSetting('itop-synchro-dashboard', 'use_last_run_stats', false);
 
 	while ($oSDS = $oSDSSet->Fetch()) {
 		$sSelectSynchroLog = 'SELECT SynchroLog WHERE sync_source_id = :source_id';
@@ -204,32 +205,31 @@ try {
 			$aRow['duration'] = AttributeDuration::FormatDuration($iDuration);
 
 			$sOQL = "SELECT SynchroReplica WHERE sync_source_id=$iDSid";
-			$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
-			if (MetaModel::GetModuleSetting('itop-synchro-dashboard', 'use_last_run_stats', false)){
-			  $iCountAllReplicas = $oLastLog->Get('stats_nb_replica_seen');
+			if ($bUseLastRunStats) {
+				$iCountAllReplicas = $oLastLog->Get('stats_nb_replica_seen');
 			} else {
-			  $iCountAllReplicas = $oSet->Count();
+				$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
+				$iCountAllReplicas = $oSet->Count();
 			}
-			
+
 			$aRow['replicas'] = "<a href=\"{$sReplicaURl}?operation=oql&datasource=$iDSid&oql=$sOQL\">$iCountAllReplicas</a>";
 			$sOQL = "SELECT SynchroReplica WHERE sync_source_id=$iDSid AND status_last_error !=''";
-			$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
-			
-			if (MetaModel::GetModuleSetting('itop-synchro-dashboard', 'use_last_run_stats', false)){
-			  $iCountAllErrors = $oLastLog->GetErrorCount();
+			if ($bUseLastRunStats) {
+				$iCountAllErrors = $oLastLog->GetErrorCount();
 			} else {
-			  $iCountAllErrors = $oSet->Count();
+				$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
+				$iCountAllErrors = $oSet->Count();
 			}
 			$aRow['errors'] = "<a href=\"{$sReplicaURl}?operation=oql&datasource=$iDSid&oql=$sOQL\">$iCountAllErrors</a>";
 			$sOQL = "SELECT SynchroReplica WHERE sync_source_id=$iDSid AND status_last_warning !=''";
-			$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
-			if (MetaModel::GetModuleSetting('itop-synchro-dashboard', 'use_last_run_stats', false)){
-			  $iCountAllWarnings= $oLastLog->Get('stats_nb_obj_created_warnings')+$oLastLog->Get('stats_nb_obj_updated_warnings')+$oLastLog->Get('stats_nb_obj_new_updated_warnings')+
-			  $oLastLog->Get('stats_nb_obj_new_unchanged_warnings');
+			if ($bUseLastRunStats) {
+				$iCountAllWarnings = $oLastLog->Get('stats_nb_obj_created_warnings')+$oLastLog->Get('stats_nb_obj_updated_warnings')+$oLastLog->Get('stats_nb_obj_new_updated_warnings')+
+				$oLastLog->Get('stats_nb_obj_new_unchanged_warnings');
 			} else {
-			  $iCountAllWarnings = $oSet->Count();
+				$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
+				$iCountAllWarnings = $oSet->Count();
 			}
-			
+
 			$aRow['warnings'] = "<a href=\"{$sReplicaURl}?operation=oql&datasource=$iDSid&oql=$sOQL\">$iCountAllWarnings</a>";
 
 			$aRow['peak_memory'] = sprintf('%.2f Mo', $oLastLog->Get('memory_usage_peak') / (1024 * 1024));
