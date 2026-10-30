@@ -34,6 +34,12 @@ Dict::Add('EN US', 'English', 'English', array(
 	'UI:SynchroDashboard:NbOfErrors+' => 'Number of errors encountered during the latest run',
 	'UI:SynchroDashboard:NbOfWarnings' => 'Warnings',
 	'UI:SynchroDashboard:NbOfWarnings+' => 'Number of warnings encountered during the latest run',
+	'UI:SynchroDashboard:NbOfReplicasLastRun' => 'Replicas (last run)',
+	'UI:SynchroDashboard:NbOfReplicasLastRun+' => 'Number of replicas seen during the latest run',
+	'UI:SynchroDashboard:NbOfErrorsLastRun' => 'Errors (last run)',
+	'UI:SynchroDashboard:NbOfErrorsLastRun+' => 'Number of errors of the latest run only',
+	'UI:SynchroDashboard:NbOfWarningsLastRun' => 'Warnings (last run)',
+	'UI:SynchroDashboard:NbOfWarningsLastRun+' => 'Number of warnings of the latest run only',
 	'UI:SynchroDashboard:PeakMemoryUsage' => 'Peak Memory Usage',
 	'UI:SynchroDashboard:PeakMemoryUsage+' => 'Maximum amount of memory used during the synchronization',
 	// Tab labels
