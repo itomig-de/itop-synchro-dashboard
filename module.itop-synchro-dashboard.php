@@ -42,11 +42,10 @@ SetupWebPage::AddModule(
 		'doc.manual_setup' => '', // hyperlink to manual setup documentation, if any
 		'doc.more_information' => '', // hyperlink to more information, if any
 
-		// Default settings 
+		// Default settings
 		//
 		'settings' => array(
 			// Module specific settings go here, if any
-			'use_last_run_stats' => false,
 		),
 	)
 );
