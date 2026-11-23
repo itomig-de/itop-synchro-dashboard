@@ -46,6 +46,7 @@ SetupWebPage::AddModule(
 		//
 		'settings' => array(
 			// Module specific settings go here, if any
+			'use_last_run_stats' => false, // Show the "last run" columns (replicas, errors, warnings) in the dashboard
 		),
 	)
 );
