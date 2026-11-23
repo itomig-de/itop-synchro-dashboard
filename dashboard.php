@@ -180,6 +180,7 @@ try {
 	$iPeakMemory = 0;
 	$iTotalDuration = 0;
 	$iTotalDataSources = 0;
+	$bUseLastRunStats = MetaModel::GetModuleSetting('itop-synchro-dashboard', 'use_last_run_stats', false);
 
 	while ($oSDS = $oSDSSet->Fetch()) {
 		$sSelectSynchroLog = 'SELECT SynchroLog WHERE sync_source_id = :source_id';
@@ -206,22 +207,25 @@ try {
 			$sOQL = "SELECT SynchroReplica WHERE sync_source_id=$iDSid";
 			$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
 			$iCountAllReplicas = $oSet->Count();
-			$iLastRunReplicas = $oLastLog->Get('stats_nb_replica_seen');
 			$aRow['replicas'] = "<a href=\"{$sReplicaURl}?operation=oql&datasource=$iDSid&oql=$sOQL\">$iCountAllReplicas</a>";
-			$aRow['replicas_last_run'] = $iLastRunReplicas;
+			if ($bUseLastRunStats) {
+				$aRow['replicas_last_run'] = $oLastLog->Get('stats_nb_replica_seen');
+			}
 			$sOQL = "SELECT SynchroReplica WHERE sync_source_id=$iDSid AND status_last_error !=''";
 			$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
 			$iCountAllErrors = $oSet->Count();
-			$iLastRunErrors = $oLastLog->GetErrorCount();
 			$aRow['errors'] = "<a href=\"{$sReplicaURl}?operation=oql&datasource=$iDSid&oql=$sOQL\">$iCountAllErrors</a>";
-			$aRow['errors_last_run'] = $iLastRunErrors;
+			if ($bUseLastRunStats) {
+				$aRow['errors_last_run'] = $oLastLog->GetErrorCount();
+			}
 			$sOQL = "SELECT SynchroReplica WHERE sync_source_id=$iDSid AND status_last_warning !=''";
 			$oSet = new DBObjectSet(DBObjectSearch::FromOQL($sOQL));
 			$iCountAllWarnings = $oSet->Count();
-			$iLastRunWarnings = $oLastLog->Get('stats_nb_obj_created_warnings')+$oLastLog->Get('stats_nb_obj_updated_warnings')+$oLastLog->Get('stats_nb_obj_new_updated_warnings')+
-			$oLastLog->Get('stats_nb_obj_new_unchanged_warnings');
 			$aRow['warnings'] = "<a href=\"{$sReplicaURl}?operation=oql&datasource=$iDSid&oql=$sOQL\">$iCountAllWarnings</a>";
-			$aRow['warnings_last_run'] = $iLastRunWarnings;
+			if ($bUseLastRunStats) {
+				$aRow['warnings_last_run'] = $oLastLog->Get('stats_nb_obj_created_warnings') + $oLastLog->Get('stats_nb_obj_updated_warnings')
+					+ $oLastLog->Get('stats_nb_obj_new_updated_warnings') + $oLastLog->Get('stats_nb_obj_new_unchanged_warnings');
+			}
 
 			$aRow['peak_memory'] = sprintf('%.2f Mo', $oLastLog->Get('memory_usage_peak') / (1024 * 1024));
 
@@ -241,9 +245,11 @@ try {
 			$aRow['replicas'] = '&nbsp;';
 			$aRow['errors'] = '&nbsp;';
 			$aRow['warnings'] = '&nbsp;';
-			$aRow['replicas_last_run'] = '&nbsp;';
-			$aRow['errors_last_run'] = '&nbsp;';
-			$aRow['warnings_last_run'] = '&nbsp;';
+			if ($bUseLastRunStats) {
+				$aRow['replicas_last_run'] = '&nbsp;';
+				$aRow['errors_last_run'] = '&nbsp;';
+				$aRow['warnings_last_run'] = '&nbsp;';
+			}
 			$aRow['peak_memory'] = '&nbsp;';
 		}
 		$aData[] = $aRow;
@@ -256,11 +262,13 @@ try {
 		'replicas' => ['label' => Dict::S('UI:SynchroDashboard:NbOfReplicas'), 'description' => Dict::S('UI:SynchroDashboard:NbOfReplicas+')],
 		'errors' => ['label' => Dict::S('UI:SynchroDashboard:NbOfErrors'), 'description' => Dict::S('UI:SynchroDashboard:NbOfErrors+')],
 		'warnings' => ['label' => Dict::S('UI:SynchroDashboard:NbOfWarnings'), 'description' => Dict::S('UI:SynchroDashboard:NbOfWarnings+')],
-                'replicas_last_run' => ['label' => Dict::S('UI:SynchroDashboard:NbOfReplicasLastRun'), 'description' => Dict::S('UI:SynchroDashboard:NbOfReplicasLastRun+')],
-                'errors_last_run' => ['label' => Dict::S('UI:SynchroDashboard:NbOfErrorsLastRun'), 'description' => Dict::S('UI:SynchroDashboard:NbOfErrorsLastRun+')],
-                'warnings_last_run' => ['label' => Dict::S('UI:SynchroDashboard:NbOfWarningsLastRun'), 'description' => Dict::S('UI:SynchroDashboard:NbOfWarningsLastRun+')],
 		'peak_memory' => ['label' => Dict::S('UI:SynchroDashboard:PeakMemoryUsage'), 'description' => Dict::S('UI:SynchroDashboard:PeakMemoryUsage+')],
 	];
+	if ($bUseLastRunStats) {
+		$aConfig['replicas_last_run'] = ['label' => Dict::S('UI:SynchroDashboard:NbOfReplicasLastRun'), 'description' => Dict::S('UI:SynchroDashboard:NbOfReplicasLastRun+')];
+		$aConfig['errors_last_run'] = ['label' => Dict::S('UI:SynchroDashboard:NbOfErrorsLastRun'), 'description' => Dict::S('UI:SynchroDashboard:NbOfErrorsLastRun+')];
+		$aConfig['warnings_last_run'] = ['label' => Dict::S('UI:SynchroDashboard:NbOfWarningsLastRun'), 'description' => Dict::S('UI:SynchroDashboard:NbOfWarningsLastRun+')];
+	}
 
 	$oP->add_style('.stats-container { margin-left: auto; margin-right: auto; width: 900px; vertical-align: bottom; }');
 	$oP->add_style('.stats_bagde { padding: 0.5em; display: inline-block; vertical-align: middle; height: 90px; min-width: 90px; font-size: 1.3em; font-weight: bold; margin-left: 0.5em; margin-right: 0.5em; text-align: center; margin-top: 1em; margin-bottom: 1em; }');
